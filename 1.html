@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>منصة واد الرمان التفاعلية</title>
+    
+    <!-- Scripts & Fonts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#0f172a',
+                        darkCard: '#1e293b'
+                    },
+                    borderRadius: {
+                        '4xl': '2rem',
+                        '5xl': '2.5rem'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #f8fafc;
+            scroll-behavior: smooth;
+            transition: background-color 0.4s ease;
+        }
+
+        .dark body { background-color: #0f172a; color: #f1f5f9; }
+        .dark aside, .dark header, .dark .bg-white, .dark footer, .dark .subject-card, .dark .game-container { 
+            background-color: #1e293b; 
+            border-color: #334155; 
+        }
+
+        .hero-gradient { background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%); }
+        
+        .nav-item { transition: all 0.3s ease; cursor: pointer; }
+        .active-nav { background-color: #f0fdfa; color: #0d9488; border-right: 4px solid #0d9488; }
+        .dark .active-nav { background-color: rgba(20, 184, 166, 0.1); color: #5eead4; border-right-color: #5eead4; }
+
+        .page-content { display: none; }
+        .page-content.active { display: block; animation: fadeIn 0.5s ease; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .platform-logo { width: 40px; height: 40px; object-fit: contain; border-radius: 8px; }
+
+        .lesson-card, .book-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .lesson-card:hover, .book-card:hover {
+            transform: translateY(-8px);
+        }
+
+        header.sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            background-color: rgba(255, 255, 255, 0.85);
+        }
+        .dark header.sticky-header {
+            background-color: rgba(30, 41, 59, 0.85);
+        }
+
+        .no-results {
+            display: none;
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #94a3b8;
+        }
+
+        .head-3 {
+            font-size: 1.875rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+        .dark-inverted {
+            color: #1e293b;
+        }
+        .dark .dark-inverted {
+            color: #f1f5f9;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased overflow-x-hidden">
+
+    <!-- Mobile Header -->
+    <nav class="lg:hidden flex items-center justify-between p-4 bg-white/90 dark:bg-darkCard/90 border-b dark:border-slate-700 sticky top-0 z-50 backdrop-blur-md">
+        <button id="mobile-menu-btn" class="p-2 text-slate-600 dark:text-slate-300">
+            <i data-lucide="menu"></i>
+        </button>
+        <div class="flex items-center gap-2">
+            <img src="https://api.dicebear.com/7.x/shapes/svg?seed=wad" alt="Logo" class="platform-logo">
+            <span class="font-bold text-xl">واد الرمان</span>
+        </div>
+        <button onclick="toggleDarkMode()" class="p-2 bg-slate-100 dark:bg-slate-700 rounded-full">
+            <i data-lucide="moon" class="dark:hidden w-5 h-5"></i>
+            <i data-lucide="sun" class="hidden dark:block w-5 h-5"></i>
+        </button>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside id="main-sidebar" class="fixed right-0 top-0 h-full w-72 bg-white dark:bg-darkCard border-l dark:border-slate-700 shadow-xl z-50 flex flex-col lg:translate-x-0 translate-x-full transition-transform duration-300">
+        <div class="p-8 flex items-center gap-3 border-b dark:border-slate-700">
+            <img src="https://api.dicebear.com/7.x/shapes/svg?seed=wad" alt="Logo" class="platform-logo w-10 h-10">
+            <div class="text-xl font-extrabold dark:text-white">منصة واد الرمان</div>
+        </div>
+
+        <div class="flex-grow p-4 space-y-1 mt-4">
+            <div onclick="navigateTo('home')" id="nav-home" class="nav-item active-nav flex items-center gap-3 p-3.5 rounded-2xl">
+                <i data-lucide="home" class="w-5 h-5"></i>
+                <span class="font-bold">الرئيسية</span>
+            </div>
+            <div onclick="navigateTo('subjects')" id="nav-subjects" class="nav-item flex items-center gap-3 p-3.5 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800">
+                <i data-lucide="book-open" class="w-5 h-5"></i>
+                <span class="font-medium">المواد التعليمية</span>
+            </div>
+            <div onclick="navigateTo('challenge')" id="nav-challenge" class="nav-item flex items-center gap-3 p-3.5 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800">
+                <i data-lucide="timer" class="w-5 h-5"></i>
+                <span class="font-medium">تحدي الوقت</span>
+            </div>
+            <div onclick="navigateTo('library')" id="nav-library" class="nav-item flex items-center gap-3 p-3.5 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800">
+                <i data-lucide="library" class="w-5 h-5"></i>
+                <span class="font-medium">المكتبة</span>
+            </div>
+        </div>
+
+        <div class="p-6 border-t dark:border-slate-700">
+            <div class="text-xs text-slate-400 text-center mb-4">بواسطة شاوشي ابراهيم</div>
+            <button class="w-full p-4 bg-teal-600 text-white rounded-2xl font-bold">تسجيل جديد</button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="lg:mr-72 min-h-screen flex flex-col transition-all duration-300">
+        
+        <!-- Fixed Header -->
+        <header class="hidden lg:flex sticky-header items-center justify-between p-6 z-30 border-b dark:border-slate-700 px-10">
+            <div class="relative w-80">
+                <input id="searchInput" type="text" placeholder="ابحث في المنصة..." class="w-full bg-slate-100 dark:bg-slate-800 rounded-2xl py-2.5 px-10 outline-none dark:text-white border-2 border-transparent focus:border-teal-500 focus:bg-white dark:focus:bg-slate-700 transition-all">
+                <i data-lucide="search" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5"></i>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <button onclick="toggleDarkMode()" class="p-3 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                    <i data-lucide="moon" class="dark:hidden w-5 h-5"></i>
+                    <i data-lucide="sun" class="hidden dark:block w-5 h-5"></i>
+                </button>
+                <div class="w-10 h-10 bg-teal-100 rounded-full overflow-hidden ring-2 ring-white dark:ring-slate-700">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Ibrahim" alt="User Profile">
+                </div>
+            </div>
+        </header>
+
+        <!-- Page: Home -->
+        <div id="page-home" class="page-content active">
+            <section class="p-6 lg:p-10">
+                <div class="hero-gradient rounded-[3rem] p-10 md:p-16 text-white relative overflow-hidden shadow-xl search-item">
+                    <div class="relative z-10 max-w-2xl">
+                        <span class="inline-block px-4 py-1.5 bg-white/10 rounded-full text-xs font-bold mb-6">✨ مرحباً بك في واد الرمان</span>
+                        <h1 class="text-4xl md:text-6xl font-black mb-6 leading-tight">رحلتك في تعلم العلوم الشرعية تبدأ هنا</h1>
+                        <p class="text-lg text-teal-50/90 mb-4">منصة تفاعلية تهدف لتبسيط العلوم الدينية بأسلوب عصري وممتع.</p>
+                        
+                        <!-- حديث نبوي في الصفحة الرئيسية -->
+                        <div class="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 italic text-white mb-10">
+                            <p>عن أبي هريرة رَضِيَ اللَّهُ عَنهُ أن رَسُول اللَّهِ ﷺ قال: (من سلك طريقاً يلتمس فيه علماً سهل اللَّه له طريقاً إلى الجنة) رَوَاهُ مُسلِمٌ.</p>
+                        </div>
+
+                        <div class="flex flex-wrap gap-4">
+                            <button onclick="navigateTo('subjects')" class="bg-white text-teal-800 px-10 py-4 rounded-2xl font-black shadow-lg hover:bg-teal-50 transition-colors">استكشف المواد</button>
+                            <button onclick="navigateTo('challenge')" class="bg-teal-900/20 backdrop-blur-sm border border-white/20 text-white px-10 py-4 rounded-2xl font-black hover:bg-white/10 transition-colors">تحدي الوقت</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Page: Subjects -->
+        <div id="page-subjects" class="page-content p-6 lg:p-10">
+            <div class="mb-8 search-item">
+                <div class="flex items-center justify-between mb-4">
+                    <h1 class="text-3xl md:text-4xl font-black dark:text-white">المواد التعليمية</h1>
+                    <button onclick="navigateTo('home')" class="flex items-center gap-2 px-5 py-2.5 bg-slate-100 dark:bg-slate-800 rounded-2xl text-slate-600 dark:text-slate-300 hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-all font-bold border border-transparent hover:border-teal-200">
+                        <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                        <span>رجوع</span>
+                    </button>
+                </div>
+                <p class="text-slate-500 dark:text-slate-400 mb-4 text-right">اختر المادة التي ترغب في دراستها للبدء في رحلتك التعليمية</p>
+                <div class="bg-teal-50 dark:bg-teal-900/10 p-4 rounded-2xl border-r-4 border-teal-500 italic text-teal-800 dark:text-teal-200">
+                    <p>عن أبي هريرة رَضِيَ اللَّهُ عَنهُ أن رَسُول اللَّهِ ﷺ قال: (من سلك طريقاً يلتمس فيه علماً سهل اللَّه له طريقاً إلى الجنة) رَوَاهُ مُسلِمٌ.</p>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="subjects-grid">
+                <div onclick="navigateTo('quran')" class="search-item bg-white dark:bg-darkCard p-8 rounded-[2.5rem] text-center border dark:border-slate-700 flex flex-col items-center group cursor-pointer hover:border-teal-500 hover:shadow-lg transition-all">
+                    <div class="w-20 h-20 bg-green-50 dark:bg-green-900/20 rounded-[1.5rem] flex items-center justify-center mb-6">
+                        <i data-lucide="scroll-text" class="w-10 h-10 text-green-600"></i>
+                    </div>
+                    <h3 class="text-xl font-extrabold dark:text-white mb-2">القرآن الكريم</h3>
+                    <p class="text-sm text-slate-400">علوم التجويد والتفسير</p>
+                    <button class="w-full py-3 bg-slate-50 dark:bg-slate-800 rounded-xl font-bold text-sm mt-4 group-hover:bg-teal-600 group-hover:text-white transition-colors">عرض الدروس</button>
+                </div>
+                <div onclick="navigateTo('sunnah')" class="search-item bg-white dark:bg-darkCard p-8 rounded-[2.5rem] text-center border dark:border-slate-700 flex flex-col items-center group hover:border-amber-500 hover:shadow-lg transition-all cursor-pointer">
+                    <div class="w-20 h-20 bg-amber-50 dark:bg-amber-900/20 rounded-[1.5rem] flex items-center justify-center mb-6">
+                        <i data-lucide="book-marked" class="w-10 h-10 text-amber-600"></i>
+                    </div>
+                    <h3 class="text-xl font-extrabold dark:text-white mb-2">السنة النبوية</h3>
+                    <p class="text-sm text-slate-400">الحديث الشريف وعلومه</p>
+                    <button class="w-full py-3 bg-slate-50 dark:bg-slate-800 rounded-xl font-bold text-sm mt-4 group-hover:bg-amber-600 group-hover:text-white transition-colors">عرض الدروس</button>
+                </div>
+                <div onclick="navigateTo('aqidah')" class="search-item bg-white dark:bg-darkCard p-8 rounded-[2.5rem] text-center border dark:border-slate-700 flex flex-col items-center group hover:border-purple-500 hover:shadow-lg transition-all cursor-pointer">
+                    <div class="w-20 h-20 bg-purple-50 dark:bg-purple-900/20 rounded-[1.5rem] flex items-center justify-center mb-6">
+                        <i data-lucide="shield-check" class="w-10 h-10 text-purple-600"></i>
+                    </div>
+                    <h3 class="text-xl font-extrabold dark:text-white mb-2">العقيدة الإسلامية</h3>
+                    <p class="text-sm text-slate-400">التوحيد وأصول الإيمان</p>
+                    <button class="w-full py-3 bg-slate-50 dark:bg-slate-800 rounded-xl font-bold text-sm mt-4 group-hover:bg-purple-600 group-hover:text-white transition-colors">عرض الدروس</button>
+                </div>
+                <div onclick="navigateTo('fiqh')" class="search-item bg-white dark:bg-darkCard p-8 rounded-[2.5rem] text-center border dark:border-slate-700 flex flex-col items-center group hover:border-blue-500 hover:shadow-lg transition-all cursor-pointer">
+                    <div class="w-20 h-20 bg-blue-50 dark:bg-blue-900/20 rounded-[1.5rem] flex items-center justify-center mb-6">
+                        <i data-lucide="feather" class="w-10 h-10 text-blue-600"></i>
+                    </div>
+                    <h3 class="text-xl font-extrabold dark:text-white mb-2">الفقه الإسلامي</h3>
+                    <p class="text-sm text-slate-400">العبادات والمعاملات</p>
+                    <button class="w-full py-3 bg-slate-50 dark:bg-slate-800 rounded-xl font-bold text-sm mt-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">عرض الدروس</button>
+                </div>
+            </div>
+        </div>
+       <!-- Page: Challenge (The Game) -->
+        <div id="page-challenge" class="page-content p-6 lg:p-10">
+            <div class="max-w-4xl mx-auto">
+                <div class="mb-8 text-center">
+                    <h1 class="text-4xl font-black dark:text-white mb-4">تحدي الوقت</h1>
+                    <p class="text-slate-500 dark:text-slate-400">اختبر معلوماتك الدينية في أسرع وقت ممكن!</p>
+                </div>
+
+                <!-- Start Screen -->
+                <div id="game-start-screen" class="bg-white dark:bg-darkCard rounded-[3rem] p-10 md:p-16 border dark:border-slate-700 text-center shadow-xl">
+                    <div class="w-24 h-24 bg-amber-50 dark:bg-amber-900/20 rounded-full flex items-center justify-center mx-auto mb-8">
+                        <i data-lucide="timer" class="w-12 h-12 text-amber-500"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold dark:text-white mb-6">هل أنت مستعد لبدء التحدي؟</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                        <div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl">
+                            <div class="text-teal-600 font-black text-xl mb-1">60</div>
+                            <div class="text-xs text-slate-500">ثانية للعب</div>
+                        </div>
+                        <div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl">
+                            <div class="text-teal-600 font-black text-xl mb-1">+10</div>
+                            <div class="text-xs text-slate-500">نقطة للإجابة</div>
+                        </div>
+                        <div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl">
+                            <div class="text-teal-600 font-black text-xl mb-1">∞</div>
+                            <div class="text-xs text-slate-500">أسئلة متنوعة</div>
+                        </div>
+                    </div>
+                    <button onclick="startGame()" class="bg-teal-600 text-white px-12 py-5 rounded-2xl font-black text-xl shadow-lg shadow-teal-600/30 hover:bg-teal-700 transition-all">ابدأ الآن</button>
+                </div>
+
+                <!-- Game Screen -->
+                <div id="game-active-screen" class="hidden">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="bg-white dark:bg-darkCard px-6 py-3 rounded-2xl border dark:border-slate-700 shadow-sm flex items-center gap-3">
+                            <i data-lucide="trophy" class="w-5 h-5 text-amber-500"></i>
+                            <span class="font-bold dark:text-white">النقاط: <span id="game-score">0</span></span>
+                        </div>
+                        <div class="bg-white dark:bg-darkCard px-6 py-3 rounded-2xl border dark:border-slate-700 shadow-sm flex items-center gap-3">
+                            <i data-lucide="clock" class="w-5 h-5 text-teal-600"></i>
+                            <span class="font-bold dark:text-white" id="game-timer">01:00</span>
+                        </div>
+                    </div>
+                    
+                    <div class="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full mb-8 overflow-hidden">
+                        <div id="timer-bar" class="timer-bar bg-teal-600 h-full w-full"></div>
+                    </div>
+
+                    <div class="bg-white dark:bg-darkCard rounded-[3rem] p-10 md:p-14 border dark:border-slate-700 shadow-2xl min-h-[400px] flex flex-col justify-center">
+                        <div id="question-container">
+                            <h2 id="current-question" class="text-2xl md:text-3xl font-black text-center dark:text-white mb-12 leading-relaxed">
+                                جارٍ تحميل السؤال...
+                            </h2>
+                            <div id="answers-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Answers will be injected here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Result Screen -->
+                <div id="game-result-screen" class="hidden bg-white dark:bg-darkCard rounded-[3rem] p-10 md:p-16 border dark:border-slate-700 text-center shadow-xl">
+                    <h2 class="text-3xl font-black dark:text-white mb-2">انتهى الوقت!</h2>
+                    <p class="text-slate-500 dark:text-slate-400 mb-8">رائع! لقد أبليت بلاءً حسناً</p>
+                    <div class="text-6xl font-black text-teal-600 mb-10" id="final-score">0</div>
+                    <div class="flex flex-wrap justify-center gap-4">
+                        <button onclick="startGame()" class="bg-teal-600 text-white px-10 py-4 rounded-2xl font-black hover:bg-teal-700 transition-all">العب مرة أخرى</button>
+                        <button onclick="navigateTo('home')" class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-white px-10 py-4 rounded-2xl font-black hover:bg-slate-200 transition-all">العودة للرئيسية</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Page: Library -->
+        <div id="page-library" class="page-content p-6 lg:p-10">
+            <div class="mb-8 search-item">
+                <div class="flex items-center justify-between mb-4">
+                    <h1 class="text-3xl md:text-4xl font-black dark:text-white">المكتبة الرقمية</h1>
+                    <button onclick="navigateTo('home')" class="flex items-center gap-2 px-5 py-2.5 bg-slate-100 dark:bg-slate-800 rounded-2xl text-slate-600 dark:text-slate-300 hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-all font-bold">
+                        <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                        <span>رجوع</span>
+                    </button>
+                </div>
+                <p class="text-slate-500 dark:text-slate-400 mb-6 text-right">تحميل وقراءة أهم الكتب والمصادر في العلوم الشرعية.</p>
+                
+                <div class="flex flex-wrap gap-2 mb-8">
+                    <span class="px-4 py-2 bg-teal-600 text-white rounded-xl text-sm font-bold cursor-pointer">الكل</span>
+                    <span class="px-4 py-2 bg-white dark:bg-darkCard border dark:border-slate-700 rounded-xl text-sm font-medium hover:bg-teal-50 transition-colors cursor-pointer">تفسير</span>
+                    <span class="px-4 py-2 bg-white dark:bg-darkCard border dark:border-slate-700 rounded-xl text-sm font-medium hover:bg-teal-50 transition-colors cursor-pointer">حديث</span>
+                    <span class="px-4 py-2 bg-white dark:bg-darkCard border dark:border-slate-700 rounded-xl text-sm font-medium hover:bg-teal-50 transition-colors cursor-pointer">فقه</span>
+                    <span class="px-4 py-2 bg-white dark:bg-darkCard border dark:border-slate-700 rounded-xl text-sm font-medium hover:bg-teal-50 transition-colors cursor-pointer">سيرة</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <!-- Book Item 1 -->
+                <div class="search-item book-card bg-white dark:bg-darkCard rounded-3xl border dark:border-slate-700 overflow-hidden shadow-sm flex flex-col group">
+                    <div class="relative h-64 bg-slate-100 dark:bg-slate-800 flex items-center justify-center p-8">
+                        <div class="w-32 h-44 bg-teal-600 rounded-lg shadow-2xl transform group-hover:rotate-3 transition-transform flex items-center justify-center p-4 text-center">
+                            <span class="text-white text-xs font-bold">الأربعون النووية</span>
+                        </div>
+                        <div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold text-teal-600">جديد</div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-extrabold text-lg dark:text-white mb-1">الأربعون النووية</h3>
+                        <p class="text-xs text-slate-400 mb-4">الإمام النووي رحمه الله</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-slate-500 flex items-center gap-1">
+                                <i data-lucide="file-text" class="w-3 h-3"></i> PDF
+                            </span>
+                            <button class="p-2 bg-teal-50 text-teal-600 rounded-lg group-hover:bg-teal-600 group-hover:text-white transition-colors">
+                                <i data-lucide="download" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Book Item 2 -->
+                <div class="search-item book-card bg-white dark:bg-darkCard rounded-3xl border dark:border-slate-700 overflow-hidden shadow-sm flex flex-col group">
+                    <div class="relative h-64 bg-slate-100 dark:bg-slate-800 flex items-center justify-center p-8">
+                        <div class="w-32 h-44 bg-amber-600 rounded-lg shadow-2xl transform group-hover:rotate-3 transition-transform flex items-center justify-center p-4 text-center">
+                            <span class="text-white text-xs font-bold">رياض الصالحين</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-extrabold text-lg dark:text-white mb-1">رياض الصالحين</h3>
+                        <p class="text-xs text-slate-400 mb-4">الإمام النووي رحمه الله</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-slate-500 flex items-center gap-1">
+                                <i data-lucide="file-text" class="w-3 h-3"></i> PDF
+                            </span>
+                            <button class="p-2 bg-teal-50 text-teal-600 rounded-lg group-hover:bg-teal-600 group-hover:text-white transition-colors">
+                                <i data-lucide="download" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Book Item 3 -->
+                <div class="search-item book-card bg-white dark:bg-darkCard rounded-3xl border dark:border-slate-700 overflow-hidden shadow-sm flex flex-col group">
+                    <div class="relative h-64 bg-slate-100 dark:bg-slate-800 flex items-center justify-center p-8">
+                        <div class="w-32 h-44 bg-purple-600 rounded-lg shadow-2xl transform group-hover:rotate-3 transition-transform flex items-center justify-center p-4 text-center">
+                            <span class="text-white text-xs font-bold">الرحيق المختوم</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-extrabold text-lg dark:text-white mb-1">الرحيق المختوم</h3>
+                        <p class="text-xs text-slate-400 mb-4">صفي الرحمن المباركفوري</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-slate-500 flex items-center gap-1">
+                                <i data-lucide="file-text" class="w-3 h-3"></i> PDF
+                            </span>
+                            <button class="p-2 bg-teal-50 text-teal-600 rounded-lg group-hover:bg-teal-600 group-hover:text-white transition-colors">
+                                <i data-lucide="download" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Book Item 4 -->
+                <div class="search-item book-card bg-white dark:bg-darkCard rounded-3xl border dark:border-slate-700 overflow-hidden shadow-sm flex flex-col group">
+                    <div class="relative h-64 bg-slate-100 dark:bg-slate-800 flex items-center justify-center p-8">
+                        <div class="w-32 h-44 bg-blue-600 rounded-lg shadow-2xl transform group-hover:rotate-3 transition-transform flex items-center justify-center p-4 text-center">
+                            <span class="text-white text-xs font-bold">متن الآجرومية</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-extrabold text-lg dark:text-white mb-1">متن الآجرومية</h3>
+                        <p class="text-xs text-slate-400 mb-4">ابن آجروم</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-slate-500 flex items-center gap-1">
+                                <i data-lucide="file-text" class="w-3 h-3"></i> PDF
+                            </span>
+                            <button class="p-2 bg-teal-50 text-teal-600 rounded-lg group-hover:bg-teal-600 group-hover:text-white transition-colors">
+                                <i data-lucide="download" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page: Quran Lessons -->
+        <div id="page-quran" class="page-content p-6 lg:p-10">
+            <div class="flex flex-col md:flex-row items-center justify-between mb-6 gap-6">
+                <div class="w-full">
+                    <div class="flex items-center justify-between w-full mb-4">
+                        <div class="flex items-center gap-2 text-teal-600 font-bold">
+                            <i data-lucide="chevron-right" class="w-4 h-4 cursor-pointer" onclick="navigateTo('subjects')"></i>
+                            <span class="cursor-pointer" onclick="navigateTo('subjects')">المواد</span>
+                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                            <span>القرآن الكريم</span>
+                        </div>
+                        <button onclick="navigateTo('subjects')" class="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-all font-bold">
+                            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                            <span>رجوع</span>
+                        </button>
+                    </div>
+                    <h1 class="text-3xl font-black dark:text-white text-right mb-4">دروس القرآن الكريم</h1>
+                    <div class="bg-teal-50 dark:bg-teal-900/10 p-4 rounded-2xl border-r-4 border-teal-500 italic text-teal-800 dark:text-teal-200 mb-6">
+                        <p>عن أبي هريرة رَضِيَ اللَّهُ عَنهُ أن رَسُول اللَّهِ ﷺ قال: (من سلك طريقاً يلتمس فيه علماً سهل اللَّه له طريقاً إلى الجنة) رَوَاهُ مُسلِمٌ.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="quran-grid">
+                <div class="search-item lesson-card bg-white dark:bg-darkCard rounded-[2.5rem] border dark:border-slate-700 overflow-hidden shadow-sm hover:shadow-xl flex flex-col group cursor-pointer">
+                    <div class="relative h-48 bg-teal-50 dark:bg-slate-800 flex items-center justify-center">
+                        <i data-lucide="info" class="w-12 h-12 text-teal-600 opacity-80 group-hover:scale-110 transition-transform"></i>
+                    </div>
+                    <div class="p-8">
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="bg-teal-50 dark:bg-teal-900/20 text-teal-600 text-[10px] font-black px-2 py-1 rounded-md uppercase">التعريف</span>
+                        </div>
+                        <h3 class="text-xl font-black dark:text-white mb-4 line-clamp-2">التعريف بالقرآن الكريم</h3>
+                        <div class="flex items-center justify-between mt-auto">
+                            <span class="text-sm font-medium text-slate-500">إبراهيم شاوشي</span>
+                            <i data-lucide="arrow-left" class="w-5 h-5 text-slate-300 group-hover:text-teal-600 group-hover:-translate-x-2 transition-all"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Remaining lesson pages (Sunnah, Aqidah, Fiqh, Challenge) same as previous version... -->
+        <!-- Page: Sunnah Lessons -->
+        <div id="page-sunnah" class="page-content p-6 lg:p-10">
+            <div class="flex flex-col md:flex-row items-center justify-between mb-6 gap-6">
+                <div class="w-full">
+                    <div class="flex items-center justify-between w-full mb-4">
+                        <div class="flex items-center gap-2 text-amber-600 font-bold">
+                            <i data-lucide="chevron-right" class="w-4 h-4 cursor-pointer" onclick="navigateTo('subjects')"></i>
+                            <span class="cursor-pointer" onclick="navigateTo('subjects')">المواد</span>
+                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                            <span>السنة النبوية</span>
+                        </div>
+                        <button onclick="navigateTo('subjects')" class="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all font-bold">
+                            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                            <span>رجوع</span>
+                        </button>
+                    </div>
+                    <h1 class="text-3xl font-black dark:text-white text-right mb-4">دروس السنة النبوية</h1>
+                    <div class="bg-teal-50 dark:bg-teal-900/10 p-4 rounded-2xl border-r-4 border-teal-500 italic text-teal-800 dark:text-teal-200 mb-6">
+                        <p>عن أبي هريرة رَضِيَ اللَّهُ عَنهُ أن رَسُول اللَّهِ ﷺ قال: (من سلك طريقاً يلتمس فيه علماً سهل اللَّه له طريقاً إلى الجنة) رَوَاهُ مُسلِمٌ.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="sunnah-grid">
+                <div class="search-item lesson-card bg-white dark:bg-darkCard rounded-[2.5rem] border dark:border-slate-700 overflow-hidden shadow-sm hover:shadow-xl flex flex-col group cursor-pointer">
+                    <div class="relative h-48 bg-amber-50 dark:bg-slate-800 flex items-center justify-center">
+                        <i data-lucide="book-open-check" class="w-12 h-12 text-amber-600 opacity-80 group-hover:scale-110 transition-transform"></i>
+                    </div>
+                    <div class="p-8">
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="bg-amber-50 dark:bg-amber-900/20 text-amber-600 text-[10px] font-black px-2 py-1 rounded-md uppercase">الحديث</span>
+                        </div>
+                        <h3 class="text-xl font-black dark:text-white mb-4 line-clamp-2">مدخل إلى علم الحديث الشريف</h3>
+                        <div class="flex items-center justify-between mt-auto">
+                            <span class="text-sm font-medium text-slate-500">إبراهيم شاوشي</span>
+                            <i data-lucide="arrow-left" class="w-5 h-5 text-slate-300 group-hover:text-amber-600 group-hover:-translate-x-2 transition-all"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page: Aqidah Lessons -->
+        <div id="page-aqidah" class="page-content p-6 lg:p-10">
+            <div class="flex flex-col md:flex-row items-center justify-between mb-6 gap-6">
+                <div class="w-full">
+                    <div class="flex items-center justify-between w-full mb-4">
+                        <div class="flex items-center gap-2 text-purple-600 font-bold">
+                            <i data-lucide="chevron-right" class="w-4 h-4 cursor-pointer" onclick="navigateTo('subjects')"></i>
+                            <span class="cursor-pointer" onclick="navigateTo('subjects')">المواد</span>
+                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                            <span>العقيدة الإسلامية</span>
+                        </div>
+                        <button onclick="navigateTo('subjects')" class="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all font-bold">
+                            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                            <span>رجوع</span>
+                        </button>
+                    </div>
+                    <h1 class="text-3xl font-black dark:text-white text-right mb-4">دروس العقيدة الإسلامية</h1>
+                    <div class="bg-teal-50 dark:bg-teal-900/10 p-4 rounded-2xl border-r-4 border-teal-500 italic text-teal-800 dark:text-teal-200 mb-6">
+                        <p>عن أبي هريرة رَضِيَ اللَّهُ عَنهُ أن رَسُول اللَّهِ ﷺ قال: (من سلك طريقاً يلتمس فيه علماً سهل اللَّه له طريقاً إلى الجنة) رَوَاهُ مُسلِمٌ.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="aqidah-grid">
+                <div class="search-item lesson-card bg-white dark:bg-darkCard rounded-[2.5rem] border dark:border-slate-700 overflow-hidden shadow-sm hover:shadow-xl flex flex-col group cursor-pointer">
+                    <div class="relative h-48 bg-purple-50 dark:bg-slate-800 flex items-center justify-center">
+                        <i data-lucide="key" class="w-12 h-12 text-purple-600 opacity-80 group-hover:scale-110 transition-transform"></i>
+                    </div>
+                    <div class="p-8">
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="bg-purple-50 dark:bg-purple-900/20 text-purple-600 text-[10px] font-black px-2 py-1 rounded-md uppercase">التوحيد</span>
+                        </div>
+                        <h3 class="text-xl font-black dark:text-white mb-4 line-clamp-2">أقسام التوحيد الثلاثة</h3>
+                        <div class="flex items-center justify-between mt-auto">
+                            <span class="text-sm font-medium text-slate-500">إبراهيم شاوشي</span>
+                            <i data-lucide="arrow-left" class="w-5 h-5 text-slate-300 group-hover:text-purple-600 group-hover:-translate-x-2 transition-all"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page: Fiqh Lessons -->
+        <div id="page-fiqh" class="page-content p-6 lg:p-10">
+            <div class="flex flex-col md:flex-row items-center justify-between mb-6 gap-6">
+                <div class="w-full">
+                    <div class="flex items-center justify-between w-full mb-4">
+                        <div class="flex items-center gap-2 text-blue-600 font-bold">
+                            <i data-lucide="chevron-right" class="w-4 h-4 cursor-pointer" onclick="navigateTo('subjects')"></i>
+                            <span class="cursor-pointer" onclick="navigateTo('subjects')">المواد</span>
+                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                            <span>الفقه الإسلامي</span>
+                        </div>
+                        <button onclick="navigateTo('subjects')" class="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all font-bold">
+                            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                            <span>رجوع</span>
+                        </button>
+                    </div>
+                    <h1 class="text-3xl font-black dark:text-white text-right mb-4">دروس الفقه الإسلامي</h1>
+                    <div class="bg-teal-50 dark:bg-teal-900/10 p-4 rounded-2xl border-r-4 border-teal-500 italic text-teal-800 dark:text-teal-200 mb-6">
+                        <p>عن أبي هريرة رَضِيَ اللَّهُ عَنهُ أن رَسُول اللَّهِ ﷺ قال: (من سلك طريقاً يلتمس فيه علماً سهل اللَّه له طريقاً إلى الجنة) رَوَاهُ مُسلِمٌ.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="fiqh-grid">
+                <div class="search-item lesson-card bg-white dark:bg-darkCard rounded-[2.5rem] border dark:border-slate-700 overflow-hidden shadow-sm hover:shadow-xl flex flex-col group cursor-pointer">
+                    <div class="relative h-48 bg-blue-100 dark:bg-slate-800 flex items-center justify-center">
+                        <i data-lucide="book" class="w-12 h-12 text-blue-600 opacity-80 group-hover:scale-110 transition-transform"></i>
+                    </div>
+                    <div class="p-8">
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="bg-blue-50 dark:bg-blue-900/20 text-blue-600 text-[10px] font-black px-2 py-1 rounded-md uppercase">العبادات</span>
+                        </div>
+                        <h3 class="text-xl font-black dark:text-white mb-4 line-clamp-2">أركان الصلاة وسننها بالتفصيل</h3>
+                        <div class="flex items-center justify-between mt-auto">
+                            <span class="text-sm font-medium text-slate-500">إبراهيم شاوشي</span>
+                            <i data-lucide="arrow-left" class="w-5 h-5 text-slate-300 group-hover:text-blue-600 group-hover:-translate-x-2 transition-all"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page: Challenge -->
+        <div id="page-challenge" class="page-content p-6 lg:p-10">
+            <div class="max-w-4xl mx-auto text-center search-item">
+                <div class="flex items-center justify-between w-full mb-6">
+                    <div class="flex-grow"></div>
+                    <button onclick="navigateTo('home')" class="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-all font-bold">
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        <span>رجوع</span>
+                    </button>
+                </div>
+                <h1 class="text-4xl font-black dark:text-white mb-4">تحدي الوقت</h1>
+                <div class="mb-8 bg-teal-50 dark:bg-teal-900/10 p-4 rounded-2xl border-r-4 border-teal-500 italic text-teal-800 dark:text-teal-200">
+                    <p>عن أبي هريرة رَضِيَ اللَّهُ عَنهُ أن رَسُول اللَّهِ ﷺ قال: (من سلك طريقاً يلتمس فيه علماً سهل اللَّه له طريقاً إلى الجنة) رَوَاهُ مُسلِمٌ.</p>
+                </div>
+
+                <div class="bg-white dark:bg-darkCard rounded-[3rem] p-16 border dark:border-slate-700 shadow-xl">
+                    <i data-lucide="timer" class="w-16 h-16 text-amber-500 mx-auto mb-8"></i>
+                    <h2 class="text-2xl font-bold dark:text-white mb-6">هل أنت مستعد لبدء التحدي؟</h2>
+                    <button onclick="alert('سيبدأ التحدي قريباً')" class="bg-teal-600 text-white px-12 py-5 rounded-2xl font-black text-xl shadow-lg hover:bg-teal-700 transition-all">ابدأ الآن</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-auto px-10 py-8 border-t dark:border-slate-700 bg-white dark:bg-darkCard">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="text-sm text-slate-500">© 2025 منصة واد الرمان - جميع الحقوق محفوظة</div>
+                <div class="text-sm text-slate-500">تطوير: <span class="font-bold text-slate-800 dark:text-white">شاوشي ابراهيم</span></div>
+            </div>
+        </footer>
+    </main>
+
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+
+        // Dark Mode Logic
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+        }
+        if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
+
+        // Navigation Logic
+        function navigateTo(pageId) {
+            const searchInput = document.getElementById('searchInput');
+            searchInput.value = '';
+            
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.classList.remove('active');
+                page.querySelectorAll('.search-item').forEach(item => {
+                    item.style.display = ''; 
+                });
+                const noRes = page.querySelector('.no-results');
+                if(noRes) noRes.style.display = 'none';
+            });
+
+            const targetPage = document.getElementById('page-' + pageId);
+            if (targetPage) targetPage.classList.add('active');
+
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active-nav');
+                item.classList.add('text-slate-600', 'dark:text-slate-400');
+            });
+            
+            // Map subpages to their parent nav
+            const parentNavMap = {
+                'quran': 'subjects',
+                'fiqh': 'subjects',
+                'sunnah': 'subjects',
+                'aqidah': 'subjects',
+                'library': 'library',
+                'home': 'home',
+                'challenge': 'challenge'
+            };
+
+            const parentNavId = parentNavMap[pageId] || pageId;
+            const activeNav = document.getElementById('nav-' + parentNavId);
+            if (activeNav) {
+                activeNav.classList.add('active-nav');
+                activeNav.classList.remove('text-slate-600', 'dark:text-slate-400');
+            }
+
+            window.scrollTo(0, 0);
+            if (window.innerWidth < 1024) document.getElementById('main-sidebar').classList.add('translate-x-full');
+        }
+
+        // Global Search Logic
+        const searchInput = document.getElementById('searchInput');
+        
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.trim().toLowerCase();
+            const activePage = document.querySelector('.page-content.active');
+            if (!activePage) return;
+
+            const items = activePage.querySelectorAll('.search-item');
+            const noResultsMsg = activePage.querySelector('.no-results');
+            let visibleCount = 0;
+
+            items.forEach(item => {
+                const textContent = item.innerText.toLowerCase();
+                if (textContent.includes(query)) {
+                    item.style.display = ''; 
+                    visibleCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            if (noResultsMsg) {
+                noResultsMsg.style.display = (visibleCount === 0 && query !== '') ? 'block' : 'none';
+            }
+        });
+
+        document.getElementById('mobile-menu-btn').onclick = () => {
+            document.getElementById('main-sidebar').classList.toggle('translate-x-full');
+        };
+    </script>
+</body>
+</html>
